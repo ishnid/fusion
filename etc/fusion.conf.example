@@ -1,0 +1,7 @@
+# configuration file
+runs=1
+inputs_per_run=6
+shuffles_per_run=5
+qrel_file=/path/to/trec/trec2004.web_track.qrels
+k_folds=5
+probfuse.x=20
