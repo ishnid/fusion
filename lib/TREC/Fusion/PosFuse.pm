@@ -130,10 +130,6 @@ sub fuse {
 
 	for my $docid ( sort { $scores{ $b } <=> $scores{ $a } } keys %scores ) {
 
-		# 1000 lines max (TREC limit)
-		# no longer do this - use the parameter to 'save' in TREC::ResultSet instead
-		# last if ( $rank == 999 );
-
 		$to_return->add( TREC::ResultSet::Line->new( $qid, $self->{ iter }, $docid, $rank, $scores{ $docid }, $self->{ run_id } ) );
 
 		$rank++;
