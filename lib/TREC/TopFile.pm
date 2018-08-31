@@ -56,9 +56,6 @@ sub new {
 
    $self->openfile;
 
-   # read in the first line
-   $self->{ current_line } = $self->{ filehandle }->getline;
-
    return $self;
 
 }
@@ -86,12 +83,15 @@ sub get_resultset {
    # this will set the query id in the result set itself
    $rs->add( $self->{ current_line } );
 
+   $self->readline && $rs->add( $self->{ current_line } );
+   $self->readline && $rs->add( $self->{ current_line } );  
+
    # keep adding lines until either the filehandle returns undef (i.e. the end of the file is reached)
    #  or $rs->add returns false (the current_line has a different qid
-   1 while ( defined( $self->{ current_line } = $self->{ filehandle }->getline ) && $rs->add( $self->{ current_line } ) );
+   1 while ( $self->readline && $rs->add( $self->{ current_line } ) );
 
-	# result set came straight from a topfile - no need to sort it
-	$rs->is_sorted( 1 );
+   # result set came straight from a topfile - no need to sort it
+   $rs->is_sorted( 1 );
 
    $rs->topfile( $self );
 
@@ -110,12 +110,7 @@ sub has_more {
    return ( ! $self->{ filehandle }->eof || defined( $self->{ current_line } ) );
 }
 
-=item $topfile->openfile
-
-Opens the file for reading
-
-=cut
-
+# Opens the file for reading (for internal use only => not formally documented).
 sub openfile {
 
    my $self = shift;
@@ -128,15 +123,19 @@ sub openfile {
    # open a filehandle to the topfile
    my $fh = new FileHandle;
 
-   # open via gzip if it has a .gz extension
+   # open via gzip if it has a .gz extension (requires gzcat to be in path)
    if ( $path =~ /\.gz$/ ) {
-      $fh->open( "zless $path |" ) || die "Failed to open TREC top file $path";
+      $fh->open( "gzcat $path |" ) || die "Failed to open TREC top file $path";
    }
    else {
       $fh->open( "<$path" ) || die "Failed to open TREC top file $path";
    }
 
    $self->{ filehandle } = $fh;
+
+   # read in the first line
+   $self->readline;
+
 }
 
 =item $topfile->reset
@@ -181,7 +180,7 @@ Read a line from the currently opened file
 
 sub readline {
    my $self = shift;
-   $self->{ current_line } = $self->{ filehandle }->getline;
+   return defined( $self->{ current_line } = $self->{ filehandle }->getline );
 }
 
 =item my $path = $topfile->path
