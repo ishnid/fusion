@@ -83,9 +83,6 @@ sub get_resultset {
    # this will set the query id in the result set itself
    $rs->add( $self->{ current_line } );
 
-   $self->readline && $rs->add( $self->{ current_line } );
-   $self->readline && $rs->add( $self->{ current_line } );  
-
    # keep adding lines until either the filehandle returns undef (i.e. the end of the file is reached)
    #  or $rs->add returns false (the current_line has a different qid
    1 while ( $self->readline && $rs->add( $self->{ current_line } ) );
